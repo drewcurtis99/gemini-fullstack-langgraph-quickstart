@@ -32,12 +32,15 @@ export default function App() {
     onUpdateEvent: (event: any) => {
       let processedEvent: ProcessedEvent | null = null;
       if (event.generate_query) {
+        const queries = event.generate_query.query_list;
         processedEvent = {
           title: "Generating Search Queries",
-          data: event.generate_query.query_list.join(", "),
+          data: Array.isArray(queries) ? queries.join(", ") : "No queries generated.",
         };
       } else if (event.web_research) {
-        const sources = event.web_research.sources_gathered || [];
+        const sources = Array.isArray(event.web_research.sources_gathered)
+          ? event.web_research.sources_gathered
+          : [];
         const numSources = sources.length;
         const uniqueLabels = [
           ...new Set(sources.map((s: any) => s.label).filter(Boolean)),
@@ -50,13 +53,14 @@ export default function App() {
           }.`,
         };
       } else if (event.reflection) {
+        const followUps = event.reflection.follow_up_queries;
         processedEvent = {
           title: "Reflection",
           data: event.reflection.is_sufficient
             ? "Search successful, generating final answer."
-            : `Need more information, searching for ${event.reflection.follow_up_queries.join(
-                ", "
-              )}`,
+            : `Need more information, searching for ${
+                Array.isArray(followUps) ? followUps.join(", ") : "N/A"
+              }`,
         };
       } else if (event.finalize_answer) {
         processedEvent = {
